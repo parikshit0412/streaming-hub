@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  grafana:
+    build:
+      context: .
+      dockerfile: grafana.Dockerfile
+    container_name: streamhub-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/streaming_metrics.json
+    restart: unless-stopped
