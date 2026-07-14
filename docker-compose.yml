@@ -1,6 +1,48 @@
 version: '3.8'
 
 services:
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: streamhub-nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - host-app
+      - browse-app
+      - settings-app
+      - watchlist-app
+    restart: unless-stopped
+
+  host-app:
+    build:
+      context: .
+      dockerfile: apps/host/Dockerfile
+    container_name: streamhub-host-app
+    restart: unless-stopped
+
+  browse-app:
+    build:
+      context: .
+      dockerfile: apps/browse/Dockerfile
+    container_name: streamhub-browse-app
+    restart: unless-stopped
+
+  settings-app:
+    build:
+      context: .
+      dockerfile: apps/settings/Dockerfile
+    container_name: streamhub-settings-app
+    restart: unless-stopped
+
+  watchlist-app:
+    build:
+      context: .
+      dockerfile: apps/watchlist/Dockerfile
+    container_name: streamhub-watchlist-app
+    restart: unless-stopped
+
   grafana:
     build:
       context: .
