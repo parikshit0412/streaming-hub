@@ -9,288 +9,234 @@
 
 <!-- Main App Content -->
 <div *ngIf="!isIframe || isAuthenticated" class="angular-mfe-container">
+  <!-- Toast Notification Alert -->
+  <div *ngIf="toastMessage" class="toast-notification">
+    {{ toastMessage }}
+  </div>
+
   <!-- Standalone Mode Banner -->
   <div *ngIf="!isIframe" class="standalone-banner">
-    <span>ℹ️ Running MFE in <strong>Standalone Dev Mode</strong> (Auth Gating is bypassed for development).</span>
+    <span>ℹ️ Running Settings MFE in <strong>Standalone Dev Mode</strong> (Auth Gating bypassed for development).</span>
     <span class="standalone-port">URL: http://localhost:4202</span>
   </div>
 
   <div class="content">
     <div class="header-section">
-      <h1 class="page-title">Account Settings</h1>
-      <p class="subtitle">Manage your StreamHub profile, preferences, and view system metrics.</p>
+      <h1 class="page-title">Account & System Settings</h1>
+      <p class="subtitle">Manage your profile, streaming preferences, security options, and live cluster telemetry.</p>
     </div>
 
-    <div class="settings-grid">
-      <!-- Profile Settings -->
-      <div class="glass-panel profile-section">
-        <h2>Profile Information</h2>
-        <div class="profile-card">
-          <div class="avatar">{{ userName.charAt(0).toUpperCase() }}</div>
-          <div class="user-details">
-            <h3>{{ userName }}</h3>
-            <p>Premium Plan</p>
-          </div>
-          <button class="btn btn-secondary edit-btn">Edit Profile</button>
-        </div>
-        
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" class="input-field" [value]="userEmail" disabled>
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" class="input-field" value="**********" disabled>
-        </div>
-        <button class="btn btn-primary">Save Changes</button>
-      </div>
+    <!-- Main Settings Dashboard Container with Sidebar Navigation -->
+    <div class="settings-layout">
+      <!-- Sidebar Navigation Menu -->
+      <aside class="settings-sidebar">
+        <button 
+          class="sidebar-tab" 
+          [class.active]="activeSection === 'profile'" 
+          (click)="setSection('profile')">
+          <span class="tab-icon">👤</span> Profile & Billing
+        </button>
+        <button 
+          class="sidebar-tab" 
+          [class.active]="activeSection === 'playback'" 
+          (click)="setSection('playback')">
+          <span class="tab-icon">🎥</span> Playback & Quality
+        </button>
+        <button 
+          class="sidebar-tab" 
+          [class.active]="activeSection === 'telemetry'" 
+          (click)="setSection('telemetry')">
+          <span class="tab-icon">📊</span> Telemetry & Health
+        </button>
+        <button 
+          class="sidebar-tab" 
+          [class.active]="activeSection === 'security'" 
+          (click)="setSection('security')">
+          <span class="tab-icon">🔒</span> Security & Devices
+        </button>
+      </aside>
 
-      <!-- System Metrics -->
-      <div class="glass-panel metrics-section">
-        <h2>Live System Metrics (Grafana)</h2>
-        <p class="metrics-desc">Monitoring StreamHub backend performance and streaming latency.</p>
-        
-        <iframe 
-          [src]="grafanaUrl" 
-          width="100%" 
-          height="450px" 
-          frameborder="0"
-          class="grafana-frame">
-        </iframe>
-      </div>
+      <!-- Main Content Area -->
+      <main class="settings-content">
+        <!-- 1. PROFILE & BILLING SECTION -->
+        <section *ngIf="activeSection === 'profile'" class="glass-panel animated-fade-in">
+          <h2>Profile & Subscription Plan</h2>
+          
+          <div class="profile-card">
+            <div class="avatar">{{ profile.name.charAt(0).toUpperCase() }}</div>
+            <div class="user-details">
+              <h3>{{ profile.name }}</h3>
+              <p class="plan-badge">★ {{ profile.plan }}</p>
+              <span class="billing-status">Renews automatically on Sep 1, 2026</span>
+            </div>
+            <button class="btn btn-secondary edit-btn" (click)="saveProfile()">✓ Update Profile</button>
+          </div>
+
+          <form (ngSubmit)="saveProfile()" class="settings-form">
+            <div class="form-group">
+              <label>Full Display Name</label>
+              <input type="text" class="input-field" [(ngModel)]="editName" name="editName" placeholder="Your Name">
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" class="input-field" [(ngModel)]="editEmail" name="editEmail" placeholder="your.email@example.com">
+            </div>
+
+            <!-- Subscription Upgrade Card -->
+            <div class="sub-plan-card">
+              <div class="sub-info">
+                <h4>StreamHub Ultra HD 4K Plan</h4>
+                <p>Unlimited 4K HDR Streaming • 4 Concurrent Screens • Dolby Atmos Audio</p>
+              </div>
+              <div class="sub-price">$15.99 / mo</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+          </form>
+        </section>
+
+        <!-- 2. PLAYBACK & QUALITY SECTION -->
+        <section *ngIf="activeSection === 'playback'" class="glass-panel animated-fade-in">
+          <h2>Playback & Audio Preferences</h2>
+          <p class="section-desc">Optimize video resolution and streaming data usage based on your connection speed.</p>
+
+          <form (ngSubmit)="savePlayback()" class="settings-form">
+            <div class="form-group">
+              <label>Default Streaming Quality</label>
+              <select class="input-field select-field" [(ngModel)]="videoQuality" name="videoQuality">
+                <option value="Ultra HD (4K HDR)">Ultra HD (4K HDR) — Highest Quality (7.0 GB/hr)</option>
+                <option value="High (1080p)">High (1080p Full HD) — Standard Quality (3.0 GB/hr)</option>
+                <option value="Medium (720p)">Medium (720p HD) — Data Saver (0.7 GB/hr)</option>
+                <option value="Auto (Recommended)">Auto (Recommended) — Adapts to connection speed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Audio Surround Output</label>
+              <select class="input-field select-field" [(ngModel)]="audioOutput" name="audioOutput">
+                <option value="Dolby Atmos 7.1">Dolby Atmos 7.1 Spatial Audio</option>
+                <option value="Dolby Digital 5.1">Dolby Digital 5.1 Surround</option>
+                <option value="Stereo 2.0">Standard Stereo 2.0</option>
+              </select>
+            </div>
+
+            <!-- Toggle Options -->
+            <div class="toggle-row">
+              <div>
+                <span class="toggle-title">Autoplay Next Episode</span>
+                <p class="toggle-desc">Automatically play the next episode when watching a series</p>
+              </div>
+              <input type="checkbox" class="toggle-checkbox" [(ngModel)]="autoplayNext" name="autoplayNext">
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <span class="toggle-title">Autoplay Trailer Previews</span>
+                <p class="toggle-desc">Play video trailers automatically while hovering over titles</p>
+              </div>
+              <input type="checkbox" class="toggle-checkbox" [(ngModel)]="autoplayPreviews" name="autoplayPreviews">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Save Playback Preferences</button>
+          </form>
+        </section>
+
+        <!-- 3. TELEMETRY & HEALTH SECTION -->
+        <section *ngIf="activeSection === 'telemetry'" class="glass-panel animated-fade-in">
+          <div class="telemetry-header">
+            <div>
+              <h2>Live Cluster Telemetry</h2>
+              <p class="section-desc">Real-time global CDN latency, buffer metrics, and edge server health.</p>
+            </div>
+            <span class="badge-live">● Live Stream Engine Online</span>
+          </div>
+
+          <!-- 4 Grid Telemetry Stat Cards -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Network Latency</span>
+              <div class="metric-val green">{{ latency }} ms</div>
+              <span class="metric-sub">P99 SLA: 18 ms</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Active Concurrent Streams</span>
+              <div class="metric-val blue">{{ activeViewers }}</div>
+              <span class="metric-sub">Peak Load: 2,500 Streams</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Dynamic Bitrate</span>
+              <div class="metric-val pink">{{ bitrate }}</div>
+              <span class="metric-sub">4K HEVC Stream Rate</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Edge Health Score</span>
+              <div class="metric-val purple">{{ systemHealth }}</div>
+              <span class="metric-sub">{{ totalNodes }}</span>
+            </div>
+          </div>
+
+          <!-- Animated Live Realtime Waveform Chart -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <span>Realtime Bitrate Throughput (Gbps)</span>
+              <span class="chart-live-dot">● Active Stream</span>
+            </div>
+            <svg width="100%" height="110" viewBox="0 0 500 110" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="streamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e50914" stop-opacity="0.45" />
+                  <stop offset="100%" stop-color="#e50914" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d="M 0 75 Q 60 25 120 65 T 240 35 T 360 80 T 500 40 L 500 110 L 0 110 Z" fill="url(#streamGrad)" />
+              <path d="M 0 75 Q 60 25 120 65 T 240 35 T 360 80 T 500 40" fill="none" stroke="#e50914" stroke-width="2.5" />
+            </svg>
+          </div>
+        </section>
+
+        <!-- 4. SECURITY & DEVICES SECTION -->
+        <section *ngIf="activeSection === 'security'" class="glass-panel animated-fade-in">
+          <h2>Security & Active Sessions</h2>
+          <p class="section-desc">Manage devices signed into your StreamHub account and security options.</p>
+
+          <!-- 2FA Settings Row -->
+          <div class="security-card">
+            <div>
+              <h3>Two-Factor Authentication (2FA)</h3>
+              <p>Add an extra layer of security using Google Authenticator or SMS verification.</p>
+            </div>
+            <button 
+              class="btn" 
+              [class.btn-primary]="!twoFactorEnabled" 
+              [class.btn-secondary]="twoFactorEnabled" 
+              (click)="toggleTwoFactor()">
+              {{ twoFactorEnabled ? '● Enabled (Disable)' : 'Enable 2FA' }}
+            </button>
+          </div>
+
+          <!-- Active Devices List -->
+          <div class="devices-section">
+            <div class="devices-header">
+              <h3>Active Signed-In Devices ({{ devices.length }})</h3>
+              <button class="btn btn-danger-sm" (click)="revokeAllOtherDevices()">Sign Out All Other Devices</button>
+            </div>
+
+            <div class="device-list">
+              <div *ngFor="let device of devices" class="device-item">
+                <div class="device-icon">{{ device.icon }}</div>
+                <div class="device-info">
+                  <h4>{{ device.name }} <span *ngIf="device.isCurrent" class="current-badge">This Device</span></h4>
+                  <p>{{ device.location }} • Last Active: {{ device.lastActive }}</p>
+                </div>
+                <button *ngIf="!device.isCurrent" class="btn btn-secondary-sm" (click)="revokeDevice(device.id)">Revoke</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   </div>
 </div>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
-.angular-mfe-container {
-  font-family: 'Outfit', sans-serif;
-  background-color: #0f0f13;
-  color: white;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.content {
-  padding: 3rem 4rem;
-}
-
-.header-section {
-  margin-bottom: 3rem;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #9ca3af;
-  font-size: 1.1rem;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
-}
-
-.glass-panel {
-  background: rgba(30, 30, 35, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 2rem;
-}
-
-.glass-panel h2 {
-  font-size: 1.5rem;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-.profile-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #3b82f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.user-details h3 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.user-details p {
-  margin: 0.2rem 0 0 0;
-  color: #4ade80;
-  font-size: 0.9rem;
-}
-
-.edit-btn {
-  margin-left: auto;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.input-field {
-  width: 100%;
-  background: rgba(15, 15, 19, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  font-family: 'Outfit', sans-serif;
-  font-size: 1rem;
-}
-
-.input-field:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1.2rem;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary {
-  background-color: #e50914;
-  color: white;
-  width: 100%;
-  padding: 0.8rem;
-  font-size: 1.1rem;
-}
-
-.btn-primary:hover {
-  background-color: #f40612;
-}
-
-.btn-secondary {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.metrics-desc {
-  color: #9ca3af;
-  margin-bottom: 1.5rem;
-}
-
-.grafana-frame {
-  border-radius: 8px;
-  background: rgba(15, 15, 19, 0.8);
-}
-
-/* Lock Screen */
-.lock-screen {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #09090c;
-  color: white;
-  font-family: 'Outfit', sans-serif;
-  text-align: center;
-}
-.lock-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 3rem;
-  max-width: 400px;
-  background: rgba(20, 20, 25, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-  backdrop-filter: blur(25px);
-}
-.loader-glow-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(229, 9, 20, 0.05);
-  border: 2px dashed #e50914;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  box-shadow: 0 0 25px rgba(229, 9, 20, 0.35);
-  animation: spinner 3s linear infinite;
-}
-@keyframes spinner {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.lock-card p {
-  color: #a1a1aa;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-/* Standalone banner */
-.standalone-banner {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: #93c5fd;
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  margin: 1rem 4rem 0 4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.standalone-port {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
-@media (max-width: 1024px) {
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

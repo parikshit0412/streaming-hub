@@ -4,6 +4,31 @@
   "sourceRoot": "apps/host/src",
   "projectType": "application",
   "tags": [],
-  "// targets": "to see all targets run: nx show project host --web",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/host",
+        "compiler": "babel",
+        "main": "apps/host/src/main.tsx",
+        "tsConfig": "apps/host/tsconfig.app.json",
+        "webpackConfig": "apps/host/webpack.config.js"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "outputHashing": "all"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "host:build"
+      }
+    }
+  }
 }

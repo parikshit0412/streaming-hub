@@ -2,7 +2,14 @@
   "name": "@streaming-hub/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "build:host": "nx build host",
+    "build:browse": "nx build browse",
+    "build:settings": "nx build settings",
+    "build:watchlist": "nx build watchlist",
+    "preview": "node preview-server.js"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~21.2.0",
@@ -51,6 +58,7 @@
     "eslint-plugin-playwright": "^1.6.2",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "express": "^5.2.1",
     "jiti": "2.4.2",
     "jsdom": "^27.1.0",
     "nx": "23.0.1",

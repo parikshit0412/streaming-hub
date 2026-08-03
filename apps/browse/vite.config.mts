@@ -4,10 +4,17 @@ import vue from '@vitejs/plugin-vue';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
-export default defineConfig(() => ({
+import path from 'path';
+
+export default defineConfig(({ mode }) => ({
   root: import.meta.dirname,
-  base: 'http://localhost:4201/',
+  base: mode === 'production' ? '/' : 'http://localhost:4201/',
   cacheDir: '../../node_modules/.vite/apps/browse',
+  resolve: {
+    alias: {
+      '@streaming-hub/shared-data': path.resolve(import.meta.dirname, '../../libs/shared/data-access/src/index.ts')
+    }
+  },
   server: {
     port: 4201,
     host: 'localhost',
