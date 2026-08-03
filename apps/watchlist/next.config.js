@@ -4,6 +4,7 @@
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
+  basePath: '/watchlist',
   images: { unoptimized: true }
 };
 
