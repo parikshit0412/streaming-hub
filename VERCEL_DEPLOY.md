@@ -33,7 +33,7 @@ This compiles the Angular settings dashboard.
 3. **Framework Preset:** Select **Angular**.
 4. Click on **Build and Development Settings**:
    * **Build Command:** Turn the toggle **ON** and type: `npx nx build settings`
-   * **Output Directory:** Turn the toggle **ON** and type: `dist/apps/settings`
+   * **Output Directory:** Turn the toggle **ON** and type: `dist/apps/settings/browser`
 5. Click **Deploy**.
 6. Copy the URL generated for this app (e.g., `https://streaming-hub-settings-yourusername.vercel.app`).
 
@@ -44,10 +44,10 @@ This compiles the Next.js watchlist queue application.
 
 1. Click **Add New** ➔ **Project** and import `streaming-hub` again.
 2. **Project Name:** Set this to `streaming-hub-watchlist`.
-3. **Framework Preset:** Select **Next.js**.
+3. **Framework Preset:** Select **Other** (do NOT select Next.js, as we are doing a static HTML export).
 4. Click on **Build and Development Settings**:
    * **Build Command:** Turn the toggle **ON** and type: `npx nx build watchlist`
-   * **Output Directory:** Turn the toggle **ON** and type: `dist/apps/watchlist/out`
+   * **Output Directory:** Turn the toggle **ON** and type: `apps/watchlist/out`
 5. Click **Deploy**.
 6. Copy the URL generated for this app (e.g., `https://streaming-hub-watchlist-yourusername.vercel.app`).
 
