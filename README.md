@@ -53,8 +53,10 @@ Access to all sub-applications is gated behind a centralized credentials portal 
 * [Docker Desktop](https://www.docker.com/) (to run Grafana metrics)
 
 ### 1. Installation
-Clone the repository and install all dependencies:
-```sh
+Clone the repository and install dependencies:
+```bash
+git clone https://github.com/parikshit0412/streaming-hub.git
+cd streaming-hub
 npm install
 ```
 
