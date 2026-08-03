@@ -8,6 +8,7 @@
  *   /browse/*            → dist/apps/browse              (Vue Browse MFE)
  *   /settings/*          → dist/apps/settings/browser    (Angular Settings MFE)
  *   /watchlist/*         → apps/watchlist/out             (Next.js Watchlist MFE)
+ *   /_next/*             → apps/watchlist/out/_next       (Next.js Chunks & Assets)
  */
 
 const express = require('express');
@@ -18,10 +19,11 @@ const PORT = process.env.PORT || 8085;
 
 const ROOT = path.resolve(__dirname);
 
-// 1. Sub-MFE static files — mount sub-paths BEFORE the Host catch-all
+// 1. Sub-MFE static files & Next.js chunk proxies — mount BEFORE Host catch-all
 app.use('/browse',    express.static(path.join(ROOT, 'dist/apps/browse')));
 app.use('/settings',  express.static(path.join(ROOT, 'dist/apps/settings/browser')));
 app.use('/watchlist', express.static(path.join(ROOT, 'apps/watchlist/out')));
+app.use('/_next',     express.static(path.join(ROOT, 'apps/watchlist/out/_next')));
 
 // 2. Host Shell static files
 app.use(express.static(path.join(ROOT, 'dist/apps/host')));
