@@ -1,101 +1,127 @@
-# 🎬 StreamHub: Monolithic Micro-Frontend Portal
+# 🎬 StreamHub — Enterprise Multi-Framework Micro-Frontend Streaming Platform
 
-StreamHub is a state-of-the-art cinematic micro-frontend (MFE) streaming portal built in a unified **Nx Monorepo**. It brings together four different frontend web technologies—**React**, **Vue 3**, **Angular**, and **Next.js**—as isolated applications that interact seamlessly under a single shell context, complete with containerized **Grafana** performance metrics.
+[![Nx Monorepo](https://img.shields.io/badge/Nx-Monorepo-143055?style=for-the-badge&logo=nx)](https://nx.dev/)
+[![React](https://img.shields.io/badge/React_18-Host_Shell-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Vue 3](https://img.shields.io/badge/Vue_3-Custom_Elements-4FC08D?style=for-the-badge&logo=vuedotjs)](https://vuejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js_16-App_Router-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
+[![Angular](https://img.shields.io/badge/Angular_21-Standalone_MFE-DD0031?style=for-the-badge&logo=angular)](https://angular.dev/)
+[![Vercel](https://img.shields.io/badge/Vercel-Edge_Rewrites-000000?style=for-the-badge&logo=vercel)](https://vercel.com/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+
+**StreamHub** is a state-of-the-art cinematic micro-frontend (MFE) streaming platform built within an **Nx Monorepo**. It unifies four distinct web technology stacks—**React**, **Vue 3**, **Next.js**, and **Angular**—into a single, high-performance streaming portal.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🌐 Live Demos
 
-The workspace separates applications into dedicated runtime domains, using both **Web Components (Custom Elements)** for deep integration and **sandbox Iframes** for complete isolation:
+* 🚀 **Host Portal (Unified)**: [https://streaming-hub-host.vercel.app](https://streaming-hub-host.vercel.app)
+* 🎬 **Browse MFE (Vue 3)**: [https://streaming-hub-browse.vercel.app](https://streaming-hub-browse.vercel.app)
+* 📌 **Watchlist MFE (Next.js)**: [https://streaming-hub-watchlist.vercel.app](https://streaming-hub-watchlist.vercel.app)
+* ⚙️ **Settings MFE (Angular)**: [https://streaming-hub-settings.vercel.app](https://streaming-hub-settings.vercel.app)
+
+---
+
+## 🏗️ Architectural Overview
+
+StreamHub combines **ESM Web Components** and **Iframe Edge Rewrites** to maintain team autonomy while sharing a global state and authentication context:
 
 ```mermaid
 graph TD
-    Host[Host Shell MFE - React] -->|ESM Runtime Load| VueBrowse[Browse MFE - Vue 3 Web Component]
-    Host -->|Sandboxed IFrame| NextWatch[Watchlist MFE - Next.js]
-    Host -->|Sandboxed IFrame| AngSettings[Settings MFE - Angular]
-    AngSettings -->|Embedded IFrame| Grafana[Grafana Dashboard - Docker]
+    Host[Host Portal Shell - React 18] -->|Custom Element / Shadow DOM| VueBrowse[Browse MFE - Vue 3 Web Component]
+    Host -->|Vercel Edge Rewrite / Iframe| NextWatch[Watchlist MFE - Next.js 16 App Router]
+    Host -->|Vercel Edge Rewrite / Iframe| AngSettings[Settings MFE - Angular 21 Standalone]
+    Host -->|Shared Data Layer| SharedLib["@streaming-hub/shared-data (TypeScript Lib)"]
 ```
 
-### Monorepo Components
-1. **Host App ([apps/host](file:///d:/ReactPlayProjects/project_one/streaming-hub/apps/host)):**
-   * *Tech:* React, TanStack Query, Vanilla CSS variables.
-   * *Role:* The shell portal. Provides the landing hero section, floating frosted-glass navbar, login gate, and mounts all sub-MFEs.
-2. **Browse App ([apps/browse](file:///d:/ReactPlayProjects/project_one/streaming-hub/apps/browse)):**
-   * *Tech:* Vue 3, Vite.
-   * *Role:* Compiled as a native **HTML5 Custom Element** (`<streamhub-browse>`) loaded via ES Modules. Resolves assets cross-origin and encapsulates styling inside the Shadow DOM.
-3. **Watchlist App ([apps/watchlist](file:///d:/ReactPlayProjects/project_one/streaming-hub/apps/watchlist)):**
-   * *Tech:* Next.js (Turbopack), local persistence.
-   * *Role:* An interactive queue dashboard featuring card trailers, queue metrics, and a dynamic add-movie form.
-4. **Settings App ([apps/settings](file:///d:/ReactPlayProjects/project_one/streaming-hub/apps/settings)):**
-   * *Tech:* Angular (standalone components).
-   * *Role:* Configures profile records and embeds live telemetry logs.
-5. **Metrics App ([grafana](file:///d:/ReactPlayProjects/project_one/streaming-hub/grafana)):**
-   * *Tech:* Docker, Prometheus, Grafana.
-   * *Role:* Containers collecting live system metrics, embedded directly within the Angular settings view.
+### 🧩 Monorepo Applications & Libraries
+
+| Application / Library | Technology | Architectural Role | Port / Route |
+| :--- | :--- | :--- | :--- |
+| **`apps/host`** | React 18, TanStack Query | **Host Portal Shell**: Manages global authentication, hero showcase, navigation header, and MFE lifecycle. | `http://localhost:4200` (`/`) |
+| **`apps/browse`** | Vue 3, Vite | **Catalog Browse MFE**: Compiled as a native HTML5 Custom Element (`<streamhub-browse>`) with Shadow DOM CSS isolation. | `http://localhost:4201` (`/browse`) |
+| **`apps/watchlist`** | Next.js 16 (App Router) | **Watchlist Queue MFE**: Manages user watch queues, dynamic content additions, and trailer playback. | `http://localhost:4203` (`/watchlist`) |
+| **`apps/settings`** | Angular 21 | **Account & Telemetry MFE**: Enterprise SaaS dashboard featuring billing options, audio/video quality settings, active device sessions, and animated cluster telemetry. | `http://localhost:4202` (`/settings`) |
+| **`libs/shared/data-access`** | TypeScript Library | **Shared Core**: Provides uniform TypeScript domain models, static movie catalog, and `window.postMessage` auth event bus. | Shared Package |
 
 ---
 
-## 🔑 Security & Session Gating
+## 🔑 Key Features & Technical Highlights
 
-Access to all sub-applications is gated behind a centralized credentials portal inside the Host app:
-
-* **Login Credentials:** Default email is `user@streamhub.demo` with any password (minimum 6 characters). The password field includes a visibility toggle (`👁️` / `🙈`).
-* **Token Propagation:** On successful authentication, the Host stores the session in `localStorage` and publishes a `STREAMHUB_AUTH` event to window listeners.
-* **MFE Access Gates:** If any sub-app (Vue, Angular, Next.js) is accessed inside the Host before the user signs in, the viewport blocks interaction and renders a glowing, spinning loader card indicating **"🔒 Access Gated via Host"**.
-* **Bypass for Standalone:** For developer ergonomics, running any MFE standalone directly (e.g. `http://localhost:4203`) displays a warning banner and bypasses authentication.
+* 🔒 **Cross-Framework Auth Gating**: Single sign-on portal using JWT token broadcasting via window `postMessage` and `localStorage` session fallback across frame boundaries.
+* ⚡ **Zero-Latency State Synchronization**: Shared `@streaming-hub/shared-data` library guarantees synchronous data contracts across React, Vue, Next.js, and Angular.
+* 📊 **Simulated & Containerized Telemetry**: Live network latency (P99 SLA), dynamic bitrate wave charts, and edge server health monitoring.
+* 🌐 **Serverless Edge Proxies (Vercel)**: Configured path rewrites (`/browse`, `/settings`, `/watchlist`, `/_next`) to route all sub-apps seamlessly on Vercel without cross-origin CORS errors.
+* 🐳 **Docker Compose Orchestration**: Includes Nginx reverse proxy configuration (`nginx.conf`) and containerized Grafana performance monitoring.
 
 ---
 
 ## 🚀 Getting Started
 
 ### 📋 Prerequisites
-* [Node.js](https://nodejs.org/) (v18+)
-* [Docker Desktop](https://www.docker.com/) (to run Grafana metrics)
+* [Node.js](https://nodejs.org/) (v18 or higher)
+* npm (v9 or higher)
 
 ### 1. Installation
-Clone the repository and install all dependencies:
-```sh
+Clone the repository and install dependencies:
+```bash
+git clone https://github.com/your-username/streaming-hub.git
+cd streaming-hub
 npm install
 ```
 
-### 2. Launch Local Dev Servers
-To start the entire MFE workspace simultaneously, launch the dev targets:
-```sh
-# Start the React Host Shell (Port 4200)
-$env:NX_DAEMON="false"; node node_modules/nx/dist/bin/nx.js serve host
+### 2. Run Local Development Mode
+Start all 4 micro-frontend applications simultaneously in watch mode:
 
-# Start the Vue Browse MFE (Port 4201)
-$env:NX_DAEMON="false"; node node_modules/nx/dist/bin/nx.js serve browse
+```bash
+# Start Host Shell (React) — http://localhost:4200
+npx nx serve host
 
-# Start the Angular Settings MFE (Port 4202)
-$env:NX_DAEMON="false"; node node_modules/nx/dist/bin/nx.js serve settings
+# Start Browse MFE (Vue 3) — http://localhost:4201
+npx nx serve browse
 
-# Start the Next.js Watchlist MFE (Port 4203)
-$env:NX_DAEMON="false"; node node_modules/nx/dist/bin/nx.js dev watchlist -- -p 4203
+# Start Settings MFE (Angular) — http://localhost:4202
+npx nx serve settings
+
+# Start Watchlist MFE (Next.js) — http://localhost:4203
+npx nx dev watchlist -- -p 4203
 ```
-*Once loaded, open your browser and navigate to **[http://localhost:4200](http://localhost:4200)**.*
 
-### 3. Launch Grafana Metrics (Docker)
-Start the pre-configured telemetry metrics suite:
-```sh
-docker compose up -d --build
-```
-*This serves the embedded dashboard on **`http://localhost:3000`** with anonymous viewing enabled.*
+Open **[http://localhost:4200](http://localhost:4200)** in your browser. Default login credentials:
+* **Email:** `user@streamhub.demo`
+* **Password:** `password`
 
 ---
 
-## 📦 Production & Deployment
+## 📦 Production Build & Local Preview Server
 
-The monorepo includes production configurations optimized for deployment behind the configured **Nginx proxy** (`nginx.conf`):
-
-### 1. Production Build
-To compile and build all applications into highly optimized production assets under the `dist/` directory:
-```sh
-$env:NX_DAEMON="false"; node node_modules/nx/dist/bin/nx.js run-many --target=build
+### 1. Monorepo Production Build
+Build all 4 applications into optimized production bundles inside the `dist/` directory:
+```bash
+npm run build
 ```
-*Note: Filename hashes are disabled for the Vue Browse bundle so that the Host app can reliably import `/browse/assets/index.js` in production.*
 
-### 2. Environment Configurations
-The Host application automatically switches endpoints depending on the active environment (`NODE_ENV`):
-* **Development:** Loads MFEs from isolated ports (`http://localhost:4201`, etc.) to support hot reloading.
-* **Production:** Loads MFEs from relative paths (`/browse`, `/settings`, `/watchlist`) configured under the unified Nginx proxy to resolve cross-origin policies.
+### 2. Local Production Preview
+Launch the Express-based local production preview server that mimics Vercel edge rewrites on a single origin:
+```bash
+npm run preview
+```
+Open **[http://localhost:8085](http://localhost:8085)** to preview the compiled production build locally.
+
+---
+
+## 🐳 Docker Deployment
+
+To launch the micro-frontend suite and Grafana metrics via Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+Access services:
+* **Streaming Hub Portal**: `http://localhost:8080`
+* **Grafana Telemetry**: `http://localhost:3000`
+
+---
+
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for details.
