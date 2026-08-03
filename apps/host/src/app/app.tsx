@@ -613,15 +613,20 @@ export function App() {
     );
   }
 
+  const isInsideIframe = typeof window !== 'undefined' && window.parent !== window;
+
   // Render Login screen if not authenticated
-  if (!user) {
+  if (!user && !isInsideIframe) {
     return <Login onLogin={handleLogin} />;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <div style={{ minHeight: '100vh', margin: 0, padding: 0, position: 'relative' }}>
-        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} userName={user.name} />
+        {/* Hide duplicate Host Navbar if Host app is accidentally embedded inside an iframe */}
+        {!isInsideIframe && (
+          <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} userName={user?.name || 'User'} />
+        )}
         
         {/* Render React Content (added top padding to avoid floating nav overlap) */}
         <div style={{ display: activeTab === 'home' ? 'block' : 'none' }}>

@@ -91,13 +91,21 @@ export class App implements OnInit, OnDestroy {
   }
 
   private checkGrafanaHealth(host: string) {
+    // If running on Vercel / HTTPS production domain without port 3000 exposed, default to false immediately
+    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+      this.isGrafanaOnline = false;
+      this.isCheckingGrafana = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 1500);
 
-    fetch(`http://${host}:3000/api/health`, { mode: 'no-cors', signal: controller.signal })
-      .then(() => {
+    fetch(`http://${host}:3000/api/health`, { signal: controller.signal })
+      .then((res) => {
         clearTimeout(timeoutId);
-        this.isGrafanaOnline = true;
+        this.isGrafanaOnline = res.ok || res.status === 200;
         this.isCheckingGrafana = false;
         this.cdr.detectChanges();
       })
