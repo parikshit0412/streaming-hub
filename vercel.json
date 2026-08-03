@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/browse/:path*", "destination": "https://streaming-hub-browse.vercel.app/:path*" },
+    { "source": "/settings/:path*", "destination": "https://streaming-hub-settings.vercel.app/:path*" },
+    { "source": "/watchlist/:path*", "destination": "https://streaming-hub-watchlist.vercel.app/:path*" }
+  ]
+}
