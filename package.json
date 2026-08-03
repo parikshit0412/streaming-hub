@@ -2,7 +2,13 @@
   "name": "@streaming-hub/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "build:host": "nx build host",
+    "build:browse": "nx build browse",
+    "build:settings": "nx build settings",
+    "build:watchlist": "nx build watchlist"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~21.2.0",
