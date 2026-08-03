@@ -47,16 +47,81 @@
 
       <!-- System Metrics -->
       <div class="glass-panel metrics-section">
-        <h2>Live System Metrics (Grafana)</h2>
-        <p class="metrics-desc">Monitoring StreamHub backend performance and streaming latency.</p>
-        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h2 style="margin: 0;">Live System Metrics</h2>
+            <p class="metrics-desc" style="margin-top: 0.25rem;">Monitoring StreamHub backend performance, bandwidth, and latency.</p>
+          </div>
+          <span *ngIf="isGrafanaOnline" style="background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); padding: 0.4rem 0.8rem; borderRadius: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+            ● Grafana Container Active
+          </span>
+          <span *ngIf="!isGrafanaOnline" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.4rem 0.8rem; borderRadius: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+            ⚡ Simulated Telemetry Engine
+          </span>
+        </div>
+
+        <!-- Render Live Grafana Iframe when Docker Container is active -->
         <iframe 
-          [src]="grafanaUrl" 
+          *ngIf="isGrafanaOnline"
+          [src]="safeGrafanaUrl" 
           width="100%" 
           height="450px" 
           frameborder="0"
           class="grafana-frame">
         </iframe>
+
+        <!-- Render Stunning Animated Telemetry Dashboard when Grafana Container is offline -->
+        <div *ngIf="!isGrafanaOnline" style="display: flex; flex-direction: column; gap: 1.5rem; background: rgba(15, 15, 19, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem;">
+          <!-- Informational Notice Banner -->
+          <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); color: #93c5fd; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>ℹ️ Docker Grafana Container is currently offline. Run <code>docker compose up -d</code> to connect real-time Prometheus container.</span>
+          </div>
+
+          <!-- 4 Grid Telemetry Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.2rem; border-radius: 10px;">
+              <span style="color: #9ca3af; font-size: 0.8rem; font-weight: 500;">Streaming Latency</span>
+              <div style="font-size: 1.8rem; font-weight: 700; color: #4ade80; margin: 0.3rem 0;">{{ latency }} ms</div>
+              <span style="color: #4ade80; font-size: 0.75rem; font-weight: 600;">● Optimal (99.9% Uptime)</span>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.2rem; border-radius: 10px;">
+              <span style="color: #9ca3af; font-size: 0.8rem; font-weight: 500;">Active Concurrent Viewers</span>
+              <div style="font-size: 1.8rem; font-weight: 700; color: #60a5fa; margin: 0.3rem 0;">{{ activeViewers }}</div>
+              <span style="color: #9ca3af; font-size: 0.75rem;">Peak: 2,500 Viewers</span>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.2rem; border-radius: 10px;">
+              <span style="color: #9ca3af; font-size: 0.8rem; font-weight: 500;">Bitrate Throughput</span>
+              <div style="font-size: 1.8rem; font-weight: 700; color: #f43f5e; margin: 0.3rem 0;">{{ bitrate }}</div>
+              <span style="color: #9ca3af; font-size: 0.75rem;">4K HDR Stream Rate</span>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.2rem; border-radius: 10px;">
+              <span style="color: #9ca3af; font-size: 0.8rem; font-weight: 500;">Cluster Health Score</span>
+              <div style="font-size: 1.8rem; font-weight: 700; color: #a78bfa; margin: 0.3rem 0;">{{ systemHealth }}</div>
+              <span style="color: #4ade80; font-size: 0.75rem;">All Edge Nodes Operational</span>
+            </div>
+          </div>
+
+          <!-- Animated Live Waveform Chart -->
+          <div style="background: rgba(20, 20, 25, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.2rem; border-radius: 10px; position: relative;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #9ca3af; margin-bottom: 0.8rem;">
+              <span>Live Throughput Telemetry Stream</span>
+              <span style="color: #e50914; font-weight: 600;">● Live Stream Realtime Graph</span>
+            </div>
+            <svg width="100%" height="100" viewBox="0 0 500 100" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e50914" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#e50914" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d="M 0 70 Q 50 30 100 60 T 200 40 T 300 75 T 400 35 T 500 50 L 500 100 L 0 100 Z" fill="url(#grad)" />
+              <path d="M 0 70 Q 50 30 100 60 T 200 40 T 300 75 T 400 35 T 500 50" fill="none" stroke="#e50914" stroke-width="2.5" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   </div>

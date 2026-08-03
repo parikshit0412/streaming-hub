@@ -1,26 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import { FEATURED_CATEGORIES } from '@streaming-hub/shared-data';
 
-const categories = [
-  {
-    name: "Action & Adventure",
-    movies: [
-      { id: 101, title: "Cyber Heist", poster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", duration: "2h 10m", match: "98%" },
-      { id: 102, title: "Neon City", poster: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://media.w3.org/2010/05/sintel/trailer.mp4", duration: "1h 45m", match: "85%" },
-      { id: 103, title: "Desert Storm", poster: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://media.w3.org/2010/05/sintel/trailer.mp4", duration: "2h 05m", match: "91%" },
-      { id: 104, title: "Arctic Pursuit", poster: "https://images.unsplash.com/photo-1517404215738-15263e9f9178?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", duration: "1h 55m", match: "78%" },
-    ]
-  },
-  {
-    name: "Sci-Fi & Fantasy",
-    movies: [
-      { id: 201, title: "Beyond the Stars", poster: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://media.w3.org/2010/05/sintel/trailer.mp4", duration: "2h 30m", match: "95%" },
-      { id: 202, title: "The Martian Outpost", poster: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", duration: "1h 50m", match: "88%" },
-      { id: 203, title: "Dragon's Lair", poster: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://media.w3.org/2010/05/sintel/trailer.mp4", duration: "2h 15m", match: "92%" },
-      { id: 204, title: "Neon Genesis", poster: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", duration: "1h 40m", match: "81%" },
-    ]
-  }
-];
+const categories = FEATURED_CATEGORIES;
 
 const activeVideo = ref<string | null>(null);
 const currentUser = ref<{ email: string, name: string } | null>(null);
@@ -46,6 +28,20 @@ const handleAuthMessage = (event: MessageEvent) => {
 
 onMounted(() => {
   isMfe.value = !!(window as any).__POWERED_BY_HOST__ || window.parent !== window;
+
+  const savedSession = localStorage.getItem('streamhub_session');
+  if (savedSession) {
+    try {
+      const parsed = JSON.parse(savedSession);
+      if (parsed && parsed.email) {
+        authToken.value = parsed.token || 'mock-jwt-token-streamhub-secret-xyz';
+        currentUser.value = { email: parsed.email, name: parsed.name || 'Test User' };
+      }
+    } catch (e) {
+      // Ignore JSON parse errors
+    }
+  }
+
   window.addEventListener('message', handleAuthMessage);
 });
 
