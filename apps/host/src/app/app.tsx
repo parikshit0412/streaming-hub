@@ -434,17 +434,17 @@ function ContentDashboard() {
 
 const isProd = process.env.NODE_ENV === 'production';
 
-const VUE_MFE_URL = isProd 
+const VUE_MFE_URL = process.env.REACT_APP_VUE_MFE_URL || (isProd 
   ? '/browse/assets/index.js' 
-  : 'http://localhost:4201/src/main.ts';
+  : 'http://localhost:4201/src/main.ts');
 
-const ANGULAR_MFE_URL = isProd 
+const ANGULAR_MFE_URL = process.env.REACT_APP_ANGULAR_MFE_URL || (isProd 
   ? '/settings/' 
-  : 'http://localhost:4202';
+  : 'http://localhost:4202');
 
-const WATCHLIST_MFE_URL = isProd 
+const WATCHLIST_MFE_URL = process.env.REACT_APP_WATCHLIST_MFE_URL || (isProd 
   ? '/watchlist/' 
-  : 'http://localhost:4203';
+  : 'http://localhost:4203');
 
 function MfeLoader({ 
   scriptUrl, 
