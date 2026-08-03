@@ -1,128 +1,176 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { UserProfile, AUTH_EVENT_TYPE } from '@streaming-hub/shared-data';
 
+export interface DeviceSession {
+  id: string;
+  name: string;
+  location: string;
+  lastActive: string;
+  isCurrent: boolean;
+  icon: string;
+}
+
 @Component({
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App implements OnInit, OnDestroy {
   protected title = 'settings';
+  protected isIframe = false;
+  protected isAuthenticated = false;
+
+  // Active Settings Section Tab
+  protected activeSection: 'profile' | 'playback' | 'telemetry' | 'security' = 'profile';
+
+  // User Profile Form State
   protected profile: UserProfile = {
     name: 'Test User',
     email: 'user@streamhub.demo',
-    plan: 'Premium Ultra HD'
+    plan: 'Premium 4K Ultra HD'
   };
-  protected userEmail = 'user@streamhub.demo';
-  protected userName = 'Test User';
-  protected isIframe = false;
-  protected isAuthenticated = false;
-  protected safeGrafanaUrl!: SafeResourceUrl;
+  protected editName = 'Test User';
+  protected editEmail = 'user@streamhub.demo';
 
-  // Grafana Health & Telemetry State
-  protected isGrafanaOnline = false;
-  protected isCheckingGrafana = true;
+  // Playback Preferences State
+  protected videoQuality = 'Ultra HD (4K HDR)';
+  protected audioOutput = 'Dolby Atmos 7.1';
+  protected autoplayNext = true;
+  protected autoplayPreviews = true;
+  protected downloadQuality = 'High Quality (1080p)';
+
+  // Telemetry Engine State
   protected latency = 14;
   protected activeViewers = 1428;
-  protected bitrate = '14.2 Mbps';
+  protected bitrate = '14.8 Mbps';
   protected systemHealth = '99.98%';
+  protected bufferRate = '0.02%';
+  protected totalNodes = '24 / 24 Online';
 
-  private messageListener!: (event: MessageEvent) => void;
+  // Security & Connected Devices State
+  protected twoFactorEnabled = true;
+  protected devices: DeviceSession[] = [
+    { id: '1', name: 'Chrome on Windows 11', location: 'New York, USA', lastActive: 'Active Now', isCurrent: true, icon: '💻' },
+    { id: '2', name: 'StreamHub App on iPhone 15 Pro', location: 'New York, USA', lastActive: '2 hours ago', isCurrent: false, icon: '📱' },
+    { id: '3', name: 'Samsung Smart TV 4K', location: 'Living Room', lastActive: 'Yesterday', isCurrent: false, icon: '📺' }
+  ];
+
+  // Toast Notification
+  protected toastMessage: string | null = null;
+  private toastTimer: any;
   private metricsTimer: any;
+  private messageListener!: (event: MessageEvent) => void;
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
-  ) {}
+  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.isIframe = window.parent !== window;
+    this.isIframe = typeof window !== 'undefined' && window.parent !== window;
 
-    // Check localStorage fallback for instant session sync on tab switch
+    // Load saved session fallback on mount
     const savedSession = localStorage.getItem('streamhub_session');
     if (savedSession) {
       try {
         const parsed = JSON.parse(savedSession);
         if (parsed && parsed.email) {
-          this.userEmail = parsed.email;
-          this.userName = parsed.name || 'Test User';
           this.profile.email = parsed.email;
           this.profile.name = parsed.name || 'Test User';
+          this.editEmail = parsed.email;
+          this.editName = parsed.name || 'Test User';
           this.isAuthenticated = true;
         }
       } catch (e) {
         // Ignore JSON parse errors
       }
     }
-    
-    // Resolve Grafana host dynamically based on deployment location
-    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    const rawGrafanaUrl = `http://${host}:3000/d/streaming-hub-metrics?orgId=1&kiosk`;
-    this.safeGrafanaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawGrafanaUrl);
 
-    // Perform Grafana container health check
-    this.checkGrafanaHealth(host);
-
-    // Live metrics pulse timer for fallback telemetry dashboard
+    // Live metrics pulse simulation
     this.metricsTimer = setInterval(() => {
       this.latency = 12 + Math.floor(Math.random() * 5);
       this.activeViewers = 1420 + Math.floor(Math.random() * 25);
       this.cdr.detectChanges();
-    }, 3000);
+    }, 2500);
 
+    // Cross-MFE Auth Message Listener
     this.messageListener = (event: MessageEvent) => {
       if (event.data && event.data.type === AUTH_EVENT_TYPE) {
         const { user } = event.data.payload;
-        this.userEmail = user.email;
-        this.userName = user.name;
         this.profile.email = user.email;
         this.profile.name = user.name;
+        this.editEmail = user.email;
+        this.editName = user.name;
         this.isAuthenticated = true;
         this.cdr.detectChanges();
-        console.log('Angular Settings MFE: Authenticated via @streaming-hub/shared-data!');
       }
     };
 
-    window.addEventListener('message', this.messageListener);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', this.messageListener);
+    }
   }
 
-  private checkGrafanaHealth(host: string) {
-    // If running on Vercel / HTTPS production domain without port 3000 exposed, default to false immediately
-    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-      this.isGrafanaOnline = false;
-      this.isCheckingGrafana = false;
-      this.cdr.detectChanges();
-      return;
+  protected setSection(section: 'profile' | 'playback' | 'telemetry' | 'security') {
+    this.activeSection = section;
+  }
+
+  protected saveProfile() {
+    this.profile.name = this.editName;
+    this.profile.email = this.editEmail;
+    
+    // Save updated session back to localStorage
+    const savedSession = localStorage.getItem('streamhub_session');
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        parsed.name = this.editName;
+        parsed.email = this.editEmail;
+        localStorage.setItem('streamhub_session', JSON.stringify(parsed));
+      } catch (e) {}
     }
+    this.showToast('✓ Profile information updated successfully!');
+  }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+  protected savePlayback() {
+    this.showToast('✓ Playback & Quality preferences saved!');
+  }
 
-    fetch(`http://${host}:3000/api/health`, { signal: controller.signal })
-      .then((res) => {
-        clearTimeout(timeoutId);
-        this.isGrafanaOnline = res.ok || res.status === 200;
-        this.isCheckingGrafana = false;
-        this.cdr.detectChanges();
-      })
-      .catch(() => {
-        clearTimeout(timeoutId);
-        this.isGrafanaOnline = false;
-        this.isCheckingGrafana = false;
-        this.cdr.detectChanges();
-      });
+  protected toggleTwoFactor() {
+    this.twoFactorEnabled = !this.twoFactorEnabled;
+    this.showToast(this.twoFactorEnabled ? '✓ Two-Factor Authentication enabled!' : '⚠️ Two-Factor Authentication disabled.');
+  }
+
+  protected revokeDevice(id: string) {
+    this.devices = this.devices.filter(d => d.id !== id);
+    this.showToast('✓ Device session revoked!');
+  }
+
+  protected revokeAllOtherDevices() {
+    this.devices = this.devices.filter(d => d.isCurrent);
+    this.showToast('✓ All other device sessions signed out!');
+  }
+
+  private showToast(msg: string) {
+    this.toastMessage = msg;
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = null;
+      this.cdr.detectChanges();
+    }, 3000);
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy() {
-    if (this.messageListener) {
+    if (typeof window !== 'undefined' && this.messageListener) {
       window.removeEventListener('message', this.messageListener);
     }
     if (this.metricsTimer) {
       clearInterval(this.metricsTimer);
+    }
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
     }
   }
 }
