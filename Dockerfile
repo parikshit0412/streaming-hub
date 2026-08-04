@@ -17,6 +17,11 @@ WORKDIR /app
 # Install Grafana package inside Alpine
 RUN apk add --no-cache grafana
 
+# Prepare Grafana directories and default config
+RUN mkdir -p /etc/grafana /var/lib/grafana /var/log/grafana \
+    && touch /etc/grafana/grafana.ini \
+    && chmod -R 777 /var/lib/grafana /var/log/grafana
+
 # Copy Grafana provisioning and dashboards
 COPY ./grafana/provisioning /etc/grafana/provisioning
 COPY ./grafana/dashboards /etc/grafana/dashboards
@@ -39,6 +44,11 @@ ENV GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
 ENV GF_AUTH_DISABLE_LOGIN_FORM=true
 ENV GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/streaming_metrics.json
 ENV GF_SERVER_SERVE_FROM_SUB_PATH=true
+ENV GF_SERVER_ROOT_URL=http://localhost:3000/grafana/
+ENV GF_SERVER_HTTP_PORT=3000
+ENV GF_PATHS_DATA=/var/lib/grafana
+ENV GF_PATHS_LOGS=/var/log/grafana
+ENV GF_PATHS_PROVISIONING=/etc/grafana/provisioning
 
 # Render dynamic PORT fallback
 ENV PORT=10000
