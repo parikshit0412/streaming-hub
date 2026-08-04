@@ -118,8 +118,15 @@ docker compose up -d --build
 ```
 
 Access services:
-* **Streaming Hub Portal**: `http://localhost:8080`
+* **Streaming Hub Portal**: `http://localhost:8088`
 * **Grafana Telemetry**: `http://localhost:3000`
+
+---
+
+## ☁️ Render & Vercel Deployment Guides
+
+- 🌐 **[Vercel Deployment Walkthrough](VERCEL_DEPLOY.md)**: Deploy individual MFEs with edge rewrites.
+- 🚀 **[Render Docker Deployment Guide](RENDER_DEPLOY.md)**: Deploy the full monorepo as a single Docker Web Service on Render.
 
 ---
 

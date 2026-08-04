@@ -62,7 +62,7 @@ onUnmounted(() => {
 
   <div v-else class="vue-mfe-container">
     <!-- Standalone Banner -->
-    <div v-if="!isMfe" class="standalone-banner">
+    <div v-if="!isMfe && !currentUser" class="standalone-banner">
       <span>ℹ️ Running MFE in <strong>Standalone Dev Mode</strong> (Auth Gating is bypassed for development).</span>
       <span class="standalone-port">URL: http://localhost:4201</span>
     </div>

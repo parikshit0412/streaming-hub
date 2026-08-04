@@ -166,7 +166,7 @@ export default function WatchlistPage() {
   return (
     <div className="watchlist-container">
       {/* Standalone Bypass Alert Banner */}
-      {!isIframe && (
+      {!isIframe && !currentUser && (
         <div style={{ 
           background: 'rgba(59, 130, 246, 0.1)', 
           border: '1px solid rgba(59, 130, 246, 0.2)', 

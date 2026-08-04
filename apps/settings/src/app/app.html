@@ -15,7 +15,7 @@
   </div>
 
   <!-- Standalone Mode Banner -->
-  <div *ngIf="!isIframe" class="standalone-banner">
+  <div *ngIf="!isIframe && !isAuthenticated" class="standalone-banner">
     <span>ℹ️ Running Settings MFE in <strong>Standalone Dev Mode</strong> (Auth Gating bypassed for development).</span>
     <span class="standalone-port">URL: http://localhost:4202</span>
   </div>
@@ -194,6 +194,21 @@
               <path d="M 0 75 Q 60 25 120 65 T 240 35 T 360 80 T 500 40 L 500 110 L 0 110 Z" fill="url(#streamGrad)" />
               <path d="M 0 75 Q 60 25 120 65 T 240 35 T 360 80 T 500 40" fill="none" stroke="#e50914" stroke-width="2.5" />
             </svg>
+          </div>
+
+          <!-- Embedded Live Grafana Dashboard -->
+          <div class="glass-panel" style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: rgba(15, 15, 19, 0.7); border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 1.15rem; font-weight: 600; color: white; margin: 0;">📊 Grafana System Metrics Dashboard</h3>
+              <a href="/grafana/d/streaming-hub-metrics" target="_blank" class="btn btn-secondary-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; padding: 0.4rem 0.8rem; background: rgba(255,255,255,0.1); color: white; border-radius: 6px;">
+                Open Grafana ↗
+              </a>
+            </div>
+            <iframe 
+              src="/grafana/d/streaming-hub-metrics?kiosk&theme=dark" 
+              style="width: 100%; height: 420px; border: none; border-radius: 8px; background: #111217;"
+              title="StreamHub Grafana Metrics">
+            </iframe>
           </div>
         </section>
 
