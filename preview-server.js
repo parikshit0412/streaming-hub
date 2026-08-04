@@ -16,10 +16,36 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8085;
-
 const ROOT = path.resolve(__dirname);
 
-// 1. Sub-MFE static files & Next.js chunk proxies — mount BEFORE Host catch-all
+const http = require('http');
+
+// 1. Grafana telemetry reverse proxy — mount BEFORE Host catch-all
+app.use('/grafana', (req, res) => {
+  const options = {
+    hostname: '127.0.0.1',
+    port: 3000,
+    path: '/grafana' + req.url,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: '127.0.0.1:3000'
+    }
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res, { end: true });
+  });
+
+  proxyReq.on('error', () => {
+    res.status(502).send('Grafana service offline or initializing...');
+  });
+
+  req.pipe(proxyReq, { end: true });
+});
+
+// 2. Sub-MFE static files & Next.js chunk proxies
 app.use('/browse',    express.static(path.join(ROOT, 'dist/apps/browse')));
 app.use('/settings',  express.static(path.join(ROOT, 'dist/apps/settings/browser')));
 app.use('/watchlist', express.static(path.join(ROOT, 'apps/watchlist/out')));

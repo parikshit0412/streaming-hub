@@ -10,21 +10,38 @@ RUN npm ci
 COPY . .
 RUN npx nx run-many --target=build
 
-# Stage 2: Production Server
+# Stage 2: Production Server with Grafana & Express
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Install only production dependencies (Express)
+# Install Grafana package inside Alpine
+RUN apk add --no-cache grafana
+
+# Copy Grafana provisioning and dashboards
+COPY ./grafana/provisioning /etc/grafana/provisioning
+COPY ./grafana/dashboards /etc/grafana/dashboards
+
+# Install production dependencies
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy compiled application outputs and preview-server script
+# Copy compiled application outputs and server script
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/apps/watchlist/out ./apps/watchlist/out
 COPY --from=builder /app/preview-server.js ./preview-server.js
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+# Grafana environment variables
+ENV GF_SECURITY_ALLOW_EMBEDDING=true
+ENV GF_AUTH_ANONYMOUS_ENABLED=true
+ENV GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+ENV GF_AUTH_DISABLE_LOGIN_FORM=true
+ENV GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/streaming_metrics.json
+ENV GF_SERVER_SERVE_FROM_SUB_PATH=true
 
 # Render dynamic PORT fallback
 ENV PORT=10000
 EXPOSE 10000
 
-CMD ["node", "preview-server.js"]
+CMD ["/bin/sh", "entrypoint.sh"]
